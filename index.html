@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+	<meta charset="UTF-8">
+	<title>Global Health Infrastructure and Medical Tourism</title>
+
+	<!-- ADD Libraries-->
+	<script src="libs/d3/d3.min.js" charset="utf-8"></script>
+	<script src="libs/jquery/jquery-2.1.1.min.js" charset="utf-8"></script>
+	<script src="libs/bootstrap/js/bootstrap.min.js" charset="utf-8"></script>
+	<script src="http://d3js.org/queue.v1.min.js"></script>
+
+
+	<!--Stylesheets-->
+	<link rel="stylesheet" type="text/css" href="libs/bootstrap/css/bootstrap.min.css">
+
+	<!-- Get some nice font-->
+	<link href='http://fonts.googleapis.com/css?family=PT+Sans:400,700' rel='stylesheet' type='text/css'>
+
+	<!-- add own vis classes -->
+	<script src = "js/scatter.js"></script>
+	<script src = "js/choropleth.js"></script>
+	<script src = "js/histogram.js"></script>
+
+	 <!-- add own stylesheet-->
+    <link rel="stylesheet" type="text/css" href="css/myStyle.css">
+
+	<body>
+		<div class="container">
+			<h1>Global Health Infrastructure and medical Tourism</h1>
+
+		<div class="row">
+			<div class="col-md-8 col-sm-12">
+				<p>The following visualisation shows you choropleth map of world with an option to color countries</p>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-9" id="choropleth">
+				<svg width="1000" height="450">
+				</svg>
+			</div>
+
+			<div class="col-md-3" id="HospRank">
+				<svg width="100" height="450">
+				</svg>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-6" id="scatter">
+				<svg width="650" height="250">
+			</div>
+			<div class="col-md-6" id="histogram">
+				<svg width="500" height="250">
+			</div>
+		</div>
+	</div>
+
+	<script>
+		$(function(){
+			// this function is called after the HTML document is fully loaded
+			var allData = [];
+			var GeoData;
+			var par_year;
+
+			//date format for year
+			var yearFormat = d3.time.format("%Y");
+
+			//call this function after Data is loaded, reformatted and bound to the variables
+
+			var initVis = function(){
+
+				//Create a eventHandler
+				var MyEventHandler = new Object();
+
+				//Instantiate all Vis Objects here
+			var  scatter = new Scatter(d3.select('#scatter'), GeoData, MyEventHandler);
+
+			var  choropleth = new Choropleth(d3.select('#choropleth'), GeoData, MyEventHandler);
+
+			var histogram = new Histogram(d3.select('#histogram'), GeoData, MyEventHandler);
+
+			}
+
+			// call this function after both files are loaded -- error should be "null" if no error
+			var dataLoaded = function(error, _Data_le, _Data_pcap, _Data_p1000, _Data_gdp, _GeoData){
+
+				if(!error) {
+
+					//make our data look nicer and more useful:
+
+			//Calculating the averages of a parameter per year
+
+				GeoData = _GeoData;
+
+			//mapping all data to _Data
+			Data_le = _Data_le;
+
+			Data_pcap = _Data_pcap;
+
+			Data_p1000 = _Data_p1000;
+
+			Data_gdp = _Data_gdp;
+
+
+				par_year=	d3.range(18).map(function(i){
+						var year = 1995+i;
+						var par = [];
+						Data_le.forEach(function(d){
+							if(d[year] > 0)
+							{
+								par.push(d[year]);
+							}
+							
+						})
+
+						return {
+							"year": year,
+							//"year": yearFormat.parse(year),
+							"par_mean": d3.mean(par)
+						}
+					})
+
+				//Merge Geojson and parameter values
+				GeoData.features.forEach(function(d){
+					
+				var matched_le = Data_le.filter(function(a){return a["Country Name"] == d.properties.name});
+
+				var matched_pcap = Data_pcap.filter(function(a){return a["Country Name"] == d.properties.name});
+
+				var matched_p1000 = Data_p1000.filter(function(a){return a["Country Name"] == d.properties.name});
+
+				var matched_gdp = Data_gdp.filter(function(a){return a["Country Name"] == d.properties.name});
+
+				if (matched_le.length == 0 || matched_p1000.length == 0 || matched_pcap.length == 0){
+					d.properties.LE = {"name": d.properties.name, "2010": 0};
+					d.properties.pcap = {"name": d.properties.name, "2010": 0};
+					d.properties.p1000 = {"name": d.properties.name, "2010": 0};
+					d.properties.gdp = {"name": d.properties.name, "2010": 0};
+
+				}
+				else{
+					matched_le[0][2010] = matched_le[0][2010]-40;
+				d.properties.LE = matched_le[0];
+				d.properties.pcap = matched_pcap[0];
+				d.properties.p1000 = matched_p1000[0];
+				d.properties.gdp = matched_gdp[0];
+			}
+
+				
+			
+
+				})
+
+				}
+
+				initVis();
+			}
+
+			//load the data from csv
+
+			var start_loading = function(){
+				queue()
+				.defer(d3.csv, "data/life expectancy/sp.dyn.le00.in_Indicator_en_csv_v2.csv")
+				.defer(d3.csv, "data/Percap health spending/sh.xpd.pcap_Indicator_en_csv_v2.csv")
+				.defer(d3.csv, "data/physicians per 1000/sh.med.phys.zs_Indicator_en_csv_v2.csv")
+				.defer(d3.csv, "data/gdp percap/ny.gdp.pcap.cd_Indicator_en_csv_v2.csv")
+				.defer(d3.json, "data/countries.geo.json")
+				.await(function(error, file_le, file_pcap, file_p1000, file_gdp, file_geo){ dataLoaded(error, file_le, file_pcap, file_p1000, file_gdp, file_geo);});
+			}
+
+			start_loading();
+		})
+	</script>
+	</body>
+
+</head>
+</html>	
+  
