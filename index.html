@@ -48,6 +48,16 @@
 		</div>
 
 		<div class="row">
+			<div class="col-md-3"></div>
+			<div class="col-md-9">
+			<label>
+      		<b>Time Slider</b>
+      		<input type="range" name="points" min="1995" max="2012" step="1" value="0" id="slider-time">
+    		</label>
+    		</div>
+		</div>
+
+		<div class="row">
 			<div class="col-md-6" id="scatter">
 				<svg width="650" height="250">
 			</div>
@@ -162,10 +172,10 @@
 
 			var start_loading = function(){
 				queue()
-				.defer(d3.csv, "data/life expectancy/sp.dyn.le00.in_Indicator_en_csv_v2.csv")
-				.defer(d3.csv, "data/Percap health spending/sh.xpd.pcap_Indicator_en_csv_v2.csv")
-				.defer(d3.csv, "data/physicians per 1000/sh.med.phys.zs_Indicator_en_csv_v2.csv")
-				.defer(d3.csv, "data/gdp percap/ny.gdp.pcap.cd_Indicator_en_csv_v2.csv")
+				.defer(d3.csv, "data/life_expectancy.csv")
+				.defer(d3.csv, "data/Percap_health_spending.csv")
+				.defer(d3.csv, "data/Physicians_per_1000.csv")
+				.defer(d3.csv, "data/gdp_percap.csv")
 				.defer(d3.json, "data/countries.geo.json")
 				.await(function(error, file_le, file_pcap, file_p1000, file_gdp, file_geo){ dataLoaded(error, file_le, file_pcap, file_p1000, file_gdp, file_geo);});
 			}
