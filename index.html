@@ -21,50 +21,65 @@
 	<script src = "js/scatter.js"></script>
 	<script src = "js/choropleth.js"></script>
 	<script src = "js/histogram.js"></script>
+	<script src = "js/hosprank.js"></script>
 
 	 <!-- add own stylesheet-->
     <link rel="stylesheet" type="text/css" href="css/myStyle.css">
 
 	<body>
-		<div class="container">
+		<div class="container" id="dimScreen">
 			<h1>Global Health Infrastructure</h1>
 
 		<div class="row">
 			<div class="col-md-8 col-sm-12">
-				<p>The following visualisation shows you choropleth map of world with an option to color countries</p>
+				<b>Visualising Global health infrastructure and Life Expectancy</b>
 			</div>
 		</div>
-
+		
+	<div class="row">
+	<div class="col-md-9">
 		<div class="row">
-			<div class="col-md-9" id="choropleth">
-				<svg width="1000" height="450">
+			<div class="col-md-12" id="choropleth">
+				<svg width="878" height="450">
 				</svg>
 			</div>
-
-			<div class="col-md-3" id="HospRank">
-				<svg width="100" height="450">
-				</svg>
-			</div>
+			
 		</div>
 
 		<div class="row">
 			<div class="col-md-3"></div>
-			<div class="col-md-9">
-			<label>
+			<div class="col-md-6">
+			
       		<b>Time Slider</b>
       		<input type="range" name="points" min="1995" max="2012" step="1" value="0" id="slider-time">
-    		</label>
+    		
     		</div>
+    		<div class="col-md-3"></div>
 		</div>
 
 		<div class="row">
 			<div class="col-md-6" id="scatter">
-				<svg width="650" height="250">
-			</div>
-			<div class="col-md-6" id="histogram">
 				<svg width="500" height="250">
 			</div>
+			<div class="col-md-6" id="histogram">
+				<svg width="550" height="250">
+			</div>
 		</div>
+	</div>
+	<div class="col-md-3" id="HospRank">
+		<div class="row">
+
+			<div class="col-md-9">
+				<p>Where are the best Hospitals in the world? (Acadamic point of view)</p>
+				<b class="slider1">Top</b>
+				<input type="range" name="points" min="1" max="12000" step="1" value="0" id="slider-rank" class="slider2">
+				 </br>
+			</div>
+		</div>	
+				<svg width="300" height="700">
+				</svg>
+			</div>
+	</div>
 	</div>
 
 	<script>
@@ -73,7 +88,7 @@
 			var allData = [];
 			var GeoData;
 			var par_year;
-
+			var nested_Hrank;
 			//date format for year
 			var yearFormat = d3.time.format("%Y");
 
@@ -91,10 +106,13 @@
 
 			var histogram = new Histogram(d3.select('#histogram'), GeoData, MyEventHandler);
 
+			//console.log(nested_Hrank);
+			var hosprank = new HospRank(d3.select('#HospRank'), nested_Hrank, MyEventHandler);
+
 			}
 
 			// call this function after both files are loaded -- error should be "null" if no error
-			var dataLoaded = function(error, _Data_le, _Data_pcap, _Data_p1000, _Data_gdp, _GeoData){
+			var dataLoaded = function(error, _Data_le, _Data_pcap, _Data_p1000, _Data_gdp, _GeoData, _HRank){
 
 				if(!error) {
 
@@ -112,25 +130,10 @@
 			Data_p1000 = _Data_p1000;
 
 			Data_gdp = _Data_gdp;
+			
+			HRank = _HRank;
 
-
-				par_year=	d3.range(18).map(function(i){
-						var year = 1995+i;
-						var par = [];
-						Data_le.forEach(function(d){
-							if(d[year] > 0)
-							{
-								par.push(d[year]);
-							}
-							
-						})
-
-						return {
-							"year": year,
-							//"year": yearFormat.parse(year),
-							"par_mean": d3.mean(par)
-						}
-					})
+			//cosnole.log(HRank);
 
 				//Merge Geojson and parameter values
 				GeoData.features.forEach(function(d){
@@ -158,10 +161,23 @@
 				d.properties.gdp = matched_gdp[0];
 			}
 
-				
+			})
 			
+			var filtered_rank = HRank.filter(function(d) {return parseInt(d.Rank) < 500; });
+			
+			
+			
+			nested_Hrank = d3.nest()
+								 .key(function(d) {return d.Country; })
+								 .rollup(function(leaves) { return leaves.length; })
+								 .entries(filtered_rank);
 
-				})
+			nested_Hrank = nested_Hrank.sort(function(a,b){return parseInt(b.values) - parseInt(a.values); })
+
+			//console.log(Hrank_sort)
+
+			
+			//console.log(nested_Hrank);
 
 				}
 
@@ -177,7 +193,8 @@
 				.defer(d3.csv, "data/Physicians_per_1000.csv")
 				.defer(d3.csv, "data/gdp_percap.csv")
 				.defer(d3.json, "data/countries.geo.json")
-				.await(function(error, file_le, file_pcap, file_p1000, file_gdp, file_geo){ dataLoaded(error, file_le, file_pcap, file_p1000, file_gdp, file_geo);});
+				.defer(d3.csv, "data/Hospital_Rank.csv")
+				.await(function(error, file_le, file_pcap, file_p1000, file_gdp, file_geo, file_hrank){ dataLoaded(error, file_le, file_pcap, file_p1000, file_gdp, file_geo, file_hrank);});
 			}
 
 			start_loading();

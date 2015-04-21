@@ -25,3 +25,25 @@ body{
     fill-opacity: .5;
     pointer-events: none;
 }
+
+.extent {
+  fill: #000;
+  fill-opacity: .125;
+  stroke: #fff;
+}
+
+
+#dimScreen
+{
+    
+    padding:0;
+    margin:0;
+
+    width: 100%;
+    background:rgba(255,255,255,0.5);
+}
+
+.slider1, .slider2
+{
+    display: inline-block; vertical-align: middle; 
+}

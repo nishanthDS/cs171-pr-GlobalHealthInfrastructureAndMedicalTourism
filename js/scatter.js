@@ -5,8 +5,8 @@ Scatter = function(_parentElement, _data, _eventHandler){
 	this.eventHandler = _eventHandler;
 //18602086633
 	//define all constants
-	this.margin = {top:20, right: 50, bottom: 50, left: 30},
-	this.width = 650 - this.margin.left - this.margin.right,
+	this.margin = {top:20, right: 0, bottom: 50, left: 60},
+	this.width = 500 - this.margin.left - this.margin.right,
 	this.height = 250 - this.margin.top - this.margin.bottom;
 
 	this.initVis();
@@ -33,6 +33,13 @@ Scatter.prototype.initVis = function(){
 	this.color = d3.scale.linear()
 				.domain([0, 20, 30, 35, 40])
 				.range(["darkred", "red", "orange",  "lightgreen", "green"]);
+
+	that = this;
+	this.brush = d3.svg.brush()
+      			.on("brushstart", this.brushstart)
+      			.on("brush", this.brushmove)
+      			.on("brushend", this.brushend);
+
 
 	this.xAxis = d3.svg.axis()
 				 .scale(this.x)
@@ -61,11 +68,31 @@ Scatter.prototype.initVis = function(){
 		.style("text-anchor", "end")
 		.text("Doctors Per 1000")
 
+	 
+
+
+		this.svg.append("g")
+        .attr("class", "brush");
 	
 	//call the update method
 	this.updateVis();
 
 }
+
+Scatter.prototype.brushstart= function(data){
+   
+    //console.log(data);
+}
+
+Scatter.prototype.brushmove = function(data){
+
+}
+
+Scatter.prototype.brushend = function(data){
+
+}
+
+
 
 
 Scatter.prototype.updateVis = function(){
@@ -116,5 +143,15 @@ Scatter.prototype.updateVis = function(){
 				})
 		.attr("r", function(d){return that.r(parseInt(d.properties.LE[2010]));})
 		.style("fill", function(d) {
-			return that.color(parseInt(d.properties.LE[2010])); })
+			return that.color(parseInt(d.properties.LE[2010])); });
+
+		this.brush.x(this.x)
+				  .y(this.y);
+
+        	this.svg.select(".brush")
+            .call(this.brush);
+            
 }
+
+
+
