@@ -21,7 +21,7 @@
 	<script src = "js/scatter.js"></script>
 	<script src = "js/choropleth.js"></script>
 	<script src = "js/histogram.js"></script>
-	<script src = "js/hosprank.js"></script>
+	<script src = "js/hosptab.js"></script>
 
 	 <!-- add own stylesheet-->
     <link rel="stylesheet" type="text/css" href="css/myStyle.css">
@@ -51,7 +51,7 @@
 			<div class="col-md-6">
 			
       		<b>Time Slider</b>
-      		<input type="range" name="points" min="1995" max="2012" step="1" value="0" id="slider-time">
+      		<input type="range" name="points" min="1995" max="2010" step="1" value="0" id="slider-time">
     		
     		</div>
     		<div class="col-md-3"></div>
@@ -61,26 +61,35 @@
 			<div class="col-md-6" id="scatter">
 				<svg width="500" height="250">
 			</div>
-			<div class="col-md-6" id="histogram">
-				<svg width="550" height="250">
-			</div>
+			
+				<div class="col-md-6" id="histogram">
+					<svg width="550" height="250">
+				</div>
+			
 		</div>
 	</div>
-	<div class="col-md-3" id="HospRank">
-		<div class="row">
 
+	<div class="col-md-3">
+
+		<div class="row">
 			<div class="col-md-9">
-				<p>Where are the best Hospitals in the world? (Acadamic point of view)</p>
 				<b class="slider1">Top</b>
-				<input type="range" name="points" min="1" max="12000" step="1" value="0" id="slider-rank" class="slider2">
+				<input type="range" name="points" min="1" max="12000" step="100" value="0" id="slider-rank" class="slider2">
 				 </br>
 			</div>
-		</div>	
-				<svg width="300" height="700">
-				</svg>
+		</div>
+
+		<div class="row">
+			<div class="outer">	
+				<div class = "inner">
+					<div  id="HospTab"></div>
+				</div>
 			</div>
+		</div>
+
 	</div>
-	</div>
+</div>
+</div>
 
 	<script>
 		$(function(){
@@ -89,8 +98,14 @@
 			var GeoData;
 			var par_year;
 			var nested_Hrank;
+			var filtered_rank;
 			//date format for year
 			var yearFormat = d3.time.format("%Y");
+			
+			//event listener for slider change
+			var rangeInput = document.getElementById("slider-time");
+			
+			var rankInput = document.getElementById("slider-rank");
 
 			//call this function after Data is loaded, reformatted and bound to the variables
 
@@ -98,6 +113,8 @@
 
 				//Create a eventHandler
 				var MyEventHandler = new Object();
+				
+				//console.log(GeoData);
 
 				//Instantiate all Vis Objects here
 			var  scatter = new Scatter(d3.select('#scatter'), GeoData, MyEventHandler);
@@ -107,7 +124,52 @@
 			var histogram = new Histogram(d3.select('#histogram'), GeoData, MyEventHandler);
 
 			//console.log(nested_Hrank);
-			var hosprank = new HospRank(d3.select('#HospRank'), nested_Hrank, MyEventHandler);
+			var hosptab = new HospTab(d3.select('#HospTab'),GeoData, nested_Hrank, "cRank",MyEventHandler);
+			
+			rangeInput.addEventListener("change", function() {
+			//document.getElementById("slider-time").textContent = rangeInput.value;
+			
+			Merge_Geo(rangeInput.value);
+			choropleth.onSelectionChange(GeoData);
+			scatter.onSelectionChange(GeoData);
+			histogram.onSelectionChange(GeoData);
+			}, false);
+
+			rankInput.addEventListener("change", function(){
+				
+				RankSet(rankInput.value);
+				hosptab.onSelectionChange(nested_Hrank, "cRank");
+
+			}, false);
+
+			$(MyEventHandler).bind("selectionChangedScatter", function(event, e){
+				histogram.onSelectionChangeScatter(e);
+				choropleth.onSelectionChangeScatter(e);
+				hosptab.onSelectionChangeScatter(e);
+				//console.log(e);
+			});
+
+			$(MyEventHandler).bind("selectionChangedHistogram", function(event, e){
+				scatter.onSelectionChangeHistogram(e);
+				choropleth.onSelectionChangeHistogram(e);
+				hosptab.onSelectionChangeHistogram(e);
+				//console.log(e);
+			});
+
+			$(MyEventHandler).bind("geoCountrySelect", function(event, cname){
+					
+					RankSet(rankInput.value);
+					CountryHosp(cname);
+
+					hosptab.onSelectionChange(C_hosp_rank, "cHosp");
+			});
+
+			$(MyEventHandler).bind("countryRank", function(event, s){
+					
+
+					RankSet(rankInput.value);
+					hosptab.onSelectionChange(nested_Hrank, "cRank");
+			});
 
 			}
 
@@ -116,9 +178,7 @@
 
 				if(!error) {
 
-					//make our data look nicer and more useful:
-
-			//Calculating the averages of a parameter per year
+					
 
 				GeoData = _GeoData;
 
@@ -134,7 +194,61 @@
 			HRank = _HRank;
 
 			//cosnole.log(HRank);
+		
+		RankSet(15000);
+		Merge_Geo(1995);
+			
+		nested_Hrank.forEach(function(d){
+			matched_hosp = GeoData.features.filter(function(b){ return d.key.trim() == b.properties.name.trim();})
 
+			if (matched_hosp.length == 0)
+				{
+				//console.log(d.key.trim());
+				}
+		})
+
+		//CountryHosp("India");
+			
+
+			//console.log(Hrank_sort)
+
+			
+			//console.log(nested_Hrank);
+
+				}
+
+				initVis();
+			}
+
+			var RankSet = function(rank){
+
+			filtered_rank = HRank.filter(function(d) {return parseInt(d.Rank) < rank; });
+			
+			nested_Hrank = d3.nest()
+								 .key(function(d) {return d.Country.trim(); })
+								 .rollup(function(leaves) { return leaves.length; })
+								 .entries(filtered_rank);
+
+			nested_Hrank = nested_Hrank.sort(function(a,b){return parseInt(b.values) - parseInt(a.values); })
+			}
+
+			var CountryHosp = function(country){
+				country_hosp = filtered_rank.filter(function(d){return d.Country.trim() == country.trim();})
+
+				C_hosp_rank = country_hosp.map(function(d){
+					return {
+						"rank": d.Rank,
+						"hospital": d.Hospital
+					};
+				})
+
+				
+				C_hosp_rank = C_hosp_rank.sort(function(a,b){return parseInt(a.rank) - parseInt(b.rank); })
+
+			}
+
+			var Merge_Geo = function(year){
+			
 				//Merge Geojson and parameter values
 				GeoData.features.forEach(function(d){
 					
@@ -147,41 +261,25 @@
 				var matched_gdp = Data_gdp.filter(function(a){return a["Country Name"] == d.properties.name});
 
 				if (matched_le.length == 0 || matched_p1000.length == 0 || matched_pcap.length == 0){
-					d.properties.LE = {"name": d.properties.name, "2010": 0};
-					d.properties.pcap = {"name": d.properties.name, "2010": 0};
-					d.properties.p1000 = {"name": d.properties.name, "2010": 0};
-					d.properties.gdp = {"name": d.properties.name, "2010": 0};
+					d.properties.LE = 0;
+					d.properties.pcap = 0;
+					d.properties.p1000 = 0;
+					d.properties.gdp = 0;
 
 				}
 				else{
-					matched_le[0][2010] = matched_le[0][2010]-40;
-				d.properties.LE = matched_le[0];
-				d.properties.pcap = matched_pcap[0];
-				d.properties.p1000 = matched_p1000[0];
-				d.properties.gdp = matched_gdp[0];
+					matched_le[0][year] = matched_le[0][year];
+				d.properties.LE = matched_le[0][year];
+				d.properties.pcap = matched_pcap[0][year];
+				d.properties.p1000 = matched_p1000[0][year];
+				d.properties.gdp = matched_gdp[0][year];
+				d.properties.year = year;
 			}
+
+
 
 			})
 			
-			var filtered_rank = HRank.filter(function(d) {return parseInt(d.Rank) < 500; });
-			
-			
-			
-			nested_Hrank = d3.nest()
-								 .key(function(d) {return d.Country; })
-								 .rollup(function(leaves) { return leaves.length; })
-								 .entries(filtered_rank);
-
-			nested_Hrank = nested_Hrank.sort(function(a,b){return parseInt(b.values) - parseInt(a.values); })
-
-			//console.log(Hrank_sort)
-
-			
-			//console.log(nested_Hrank);
-
-				}
-
-				initVis();
 			}
 
 			//load the data from csv

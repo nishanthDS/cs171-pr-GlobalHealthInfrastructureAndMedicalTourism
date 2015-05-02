@@ -47,3 +47,42 @@ body{
 {
     display: inline-block; vertical-align: middle; 
 }
+
+.outer {
+    width: 400px;
+    height: 650px;
+    overflow: auto;
+}
+.inner {
+    width: 400px;
+    height:800px;
+}
+
+table, th, td {
+    border: 1px solid black;
+}
+
+.geo {
+    stroke:white;
+    stroke-width:1;
+}
+
+.geo-unselect {
+    opacity: .1;
+}
+
+.subunit-label {
+  fill: black;
+  
+  font-size: 6px;
+  font-weight: 300;
+  text-anchor: middle;
+}
+
+.scatter-text {
+  fill: black;
+  
+  font-size: 7px;
+  font-weight: 300;
+  
+}

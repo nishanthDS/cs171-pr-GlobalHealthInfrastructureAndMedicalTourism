@@ -16,7 +16,7 @@ HospRank = function(_parentElement, _data, _eventHandler){
 
 HospRank.prototype.initVis = function(){
 	// constructs SVG layout
-		console.log(this.data);
+		//console.log(this.data);
 	    this.svg = this.parentElement.select("svg")
         .attr("width", this.width + this.margin.left + this.margin.right)
         .attr("height", this.height + this.margin.top + this.margin.bottom)
