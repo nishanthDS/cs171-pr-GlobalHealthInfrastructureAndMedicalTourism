@@ -2,6 +2,7 @@
 HospTab = function(_parentElement,_geodata, _data, _meta, _eventHandler){
 	this.parentElement = _parentElement;
     this.hdata = _data;
+    this.hp = this.hdata;
     this.geodata = _geodata.features;
     this.eventHandler = _eventHandler;
     this.option = _meta;
@@ -10,7 +11,7 @@ HospTab = function(_parentElement,_geodata, _data, _meta, _eventHandler){
 	    //define all "constants" here
     this.margin = {top: 20, right: 0, bottom: 30, left: 0},
     this.width = 300 - this.margin.left - this.margin.right,
-    this.height = 700 - this.margin.top - this.margin.bottom;
+    this.height = 500 - this.margin.top - this.margin.bottom;
 	
     this.initVis();
 	
@@ -24,13 +25,23 @@ HospTab.prototype.initVis = function(){
 
         	//call the update method
         	this.updateVis();
+        	this.hoverLock = "F";
 }
 
 HospTab.prototype.onSelectionChange = function(data, meta){
-	this.option = meta;
-	this.hdata = data;
 	
-	this.updateVis();
+	this.option = meta;
+	if (this.hoverLock == "F")
+	{ 
+		this.hdata = data;
+		this.updateVis();
+	}
+
+	if(this.option = "cRank"){
+		this.hp = data;
+	}
+
+	
 }
 
 HospTab.prototype.onSelectionChangeHistogram = function(s){
@@ -63,7 +74,7 @@ HospTab.prototype.onSelectionChangeScatter = function(s){
 
 	e = s.selection;
 	//console.log(e);
-	
+	this.hdata = this.hp;
 	that = this;
 	this.fil_data = that.geodata.filter(function(d){
 		var xs = parseInt(d.properties.pcap);
@@ -77,10 +88,21 @@ HospTab.prototype.onSelectionChangeScatter = function(s){
 	var list_country_hosp =	this.fil_data.map(function(d){return d.properties.name;});
 
 	
-	this.hdata = this.hdata.filter(function(d){return list_country_hosp.indexOf(d.key) > -1;})
+	this.hdata_t = this.hdata.filter(function(d){return list_country_hosp.indexOf(d.key) > -1;})
 
+	if (this.hdata_t.length > 0)
+		{
+			this.hdata = this.hdata_t;
+			this.hoverLock = "T";
+		}
+	else
+		{
+			this.hdata = this.hp;
+			this.hoverLock = "F"
+		}
+
+		//console.log(this.hdata);
 	this.updateVis();
-	
 }
 
 HospTab.prototype.updateVis = function(){
@@ -100,8 +122,8 @@ HospTab.prototype.updateVis = function(){
 					  .attr("class", "thead");
 		tbody = table.append("tbody");
 
-		table.append("caption")
-          .html("World Countries Ranking");
+		//table.append("caption")
+         // .html("World Countries Ranking");
 		
 		thead.append("tr").selectAll("th")
 			 .data(head)

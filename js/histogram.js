@@ -12,9 +12,9 @@ Histogram = function(_parentElement, _data, _eventHandler){
     this.dp = this.data;
 	
 	    //define all "constants" here
-    this.margin = {top: 20, right: 0, bottom: 30, left: 50},
+    this.margin = {top: 20, right: 0, bottom: 130, left: 50},
     this.width = 550 - this.margin.left - this.margin.right,
-    this.height = 250 - this.margin.top - this.margin.bottom;
+    this.height = 350 - this.margin.top - this.margin.bottom;
 	
     this.initVis();
 	
@@ -32,10 +32,10 @@ Histogram.prototype.initVis = function(){
         .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
 		
 	 this.y = d3.scale.linear()
-      .range([this.height, 0]);
+      .range([this.height, 5]);
 
     this.x = d3.scale.ordinal()
-      .rangeRoundBands([0, this.width+40], .2);
+      .rangeRoundBands([0, this.width], .2);
 
 	  that = this;
 
@@ -61,11 +61,13 @@ Histogram.prototype.initVis = function(){
       this.svg.append("g")
       	.attr("class", "y axis")
       	.append("text")
-      	.attr("transform", "rotate(-90)")
+      	.attr("transform", "translate(250,0)")
       	.attr("y", 6)
       	.attr("dy", ".71em")
       	.style("text-anchor", "end")
+      	.style("font-size", 12)
       	.text("GDP Per Capita")
+
 	  
 	 this.svg.append("g")
         .attr("class", "brush");
@@ -85,6 +87,7 @@ Histogram.prototype.brushed= function(data){
 
 Histogram.prototype.onSelectionChange = function(data){
 	this.data = data.features;
+	this.dp = this.data;
 	this.updateVis();
 }
 
@@ -130,6 +133,8 @@ Histogram.prototype.updateVis = function(){
 		//this.color.domain(this.displayData.map(function(d) { return d.name}));
 		//console.log(d3.extent(this.data.map(function(d){return d.properties.gdp[2010];})));
 
+		this.ymin = d3.extent(this.data.map(function(d){return parseFloat(d.properties.gdp);}))[0]
+
 		//console.log(d3.extent(this.data.map(function(d){ return parseInt(d.properties.gdp[2010]);})));
 		
 		//this.max = d3.extent(this.data.map(function(d){return d.properties.gdp[2010];}))[1];
@@ -169,24 +174,25 @@ Histogram.prototype.updateVis = function(){
 		//bar.exit()
 		//.remove();
 		
+		
 		// Update all the inner rects
 		bar.select("rect").transition()
 			.attr("x", 0)
-			.attr("y", function(d) { return that.y(d.properties.gdp); })
+			.attr("y", function(d) { return that.y(d.properties.gdp)-5; })
 			.style("fill", "steelblue")
 			.attr("width", this.x.rangeBand())
 			.attr("height", function(d, i){ 
-					return that.y(0) - that.y(d.properties.gdp) + 5;
+					return that.y(that.ymin) - that.y(d.properties.gdp)+5;
 					});
 		
 		var text_pos = that.y(0) - 10;
 
 		bar.select("text")
 			.transition()
-			//.text(function(d) {return d.properties.name; })
+			.text(function(d) {return d.properties.name; })
 			.attr("text-anchor", "end")
-			.attr("transform", function(d) {return "translate(0,"+(that.y(d.properties.gdp)-10)+")rotate(90)"})
-			.style("font-size", "5px");
+			.attr("transform", function(d) {return "translate("+(that.x.rangeBand()/2)+","+(that.y(that.ymin)+4)+")rotate(270)"})
+			.style("font-size", function() {if(that.x.rangeBand() > 12){return 12;} else {return that.x.rangeBand()}});
 			
 			this.brush.x(this.x);
 
@@ -196,6 +202,8 @@ Histogram.prototype.updateVis = function(){
             .attr("height", this.height+5);
 
             bar.exit().transition().remove();
+
+
 		}
 
 

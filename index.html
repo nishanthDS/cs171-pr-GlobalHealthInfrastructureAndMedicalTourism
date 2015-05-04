@@ -27,6 +27,8 @@
     <link rel="stylesheet" type="text/css" href="css/myStyle.css">
 
 	<body>
+		
+		<div id ="loading"> </div>
 		<div class="container" id="dimScreen">
 			<h1>Global Health Infrastructure</h1>
 
@@ -50,8 +52,8 @@
 			<div class="col-md-3"></div>
 			<div class="col-md-6">
 			
-      		<b>Time Slider</b>
-      		<input type="range" name="points" min="1995" max="2010" step="1" value="0" id="slider-time">
+      		<b id="year">YEAR: 1995</b>
+      		<input type="range" name="points" min="1995" max="2010" step="1" value="1995" id="slider-time">
     		
     		</div>
     		<div class="col-md-3"></div>
@@ -70,11 +72,14 @@
 	</div>
 
 	<div class="col-md-3">
-
+		<div class="row">
+			<svg width="282" height="100">
+		</div>
 		<div class="row">
 			<div class="col-md-9">
-				<b class="slider1">Top</b>
-				<input type="range" name="points" min="1" max="12000" step="100" value="0" id="slider-rank" class="slider2">
+				<p id="h_tab">Where are the top hospitals located?</p>
+				<b id="top_h">Top 100</b>
+				<input type="range" name="points" min="0" max="12000" step="100" value="100" id="slider-rank" class="slider2">
 				 </br>
 			</div>
 		</div>
@@ -94,6 +99,7 @@
 	<script>
 		$(function(){
 			// this function is called after the HTML document is fully loaded
+
 			var allData = [];
 			var GeoData;
 			var par_year;
@@ -108,6 +114,19 @@
 			var rankInput = document.getElementById("slider-rank");
 
 			//call this function after Data is loaded, reformatted and bound to the variables
+
+			var preloader = function(){
+				document.getElementById("loading").style.display = "block";
+				document.getElementById("dimScreen").style.display = "none";
+			}
+
+			var postloader = function(){
+				document.getElementById("loading").style.display = "none";
+				document.getElementById("dimScreen").style.display = "block";
+			}
+
+
+
 
 			var initVis = function(){
 
@@ -133,12 +152,16 @@
 			choropleth.onSelectionChange(GeoData);
 			scatter.onSelectionChange(GeoData);
 			histogram.onSelectionChange(GeoData);
+
+			document.getElementById("year").innerHTML = "YEAR: " + rangeInput.value;
 			}, false);
 
 			rankInput.addEventListener("change", function(){
 				
 				RankSet(rankInput.value);
 				hosptab.onSelectionChange(nested_Hrank, "cRank");
+				document.getElementById("top_h").innerHTML = "TOP " + rankInput.value;
+				document.getElementById("h_tab").innerHTML = "Where are the top hospitals located?";
 
 			}, false);
 
@@ -162,6 +185,8 @@
 					CountryHosp(cname);
 
 					hosptab.onSelectionChange(C_hosp_rank, "cHosp");
+
+					document.getElementById("h_tab").innerHTML = "Hospitals in " + cname;
 			});
 
 			$(MyEventHandler).bind("countryRank", function(event, s){
@@ -169,8 +194,10 @@
 
 					RankSet(rankInput.value);
 					hosptab.onSelectionChange(nested_Hrank, "cRank");
+					document.getElementById("h_tab").innerHTML = "Where are the top hospitals located?";
 			});
 
+			postloader();
 			}
 
 			// call this function after both files are loaded -- error should be "null" if no error
@@ -195,7 +222,7 @@
 
 			//cosnole.log(HRank);
 		
-		RankSet(15000);
+		RankSet(100);
 		Merge_Geo(1995);
 			
 		nested_Hrank.forEach(function(d){
@@ -294,7 +321,8 @@
 				.defer(d3.csv, "data/Hospital_Rank.csv")
 				.await(function(error, file_le, file_pcap, file_p1000, file_gdp, file_geo, file_hrank){ dataLoaded(error, file_le, file_pcap, file_p1000, file_gdp, file_geo, file_hrank);});
 			}
-
+			
+			preloader();
 			start_loading();
 		})
 	</script>

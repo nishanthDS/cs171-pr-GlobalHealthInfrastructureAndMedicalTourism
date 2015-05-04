@@ -5,9 +5,9 @@ Choropleth = function(_parentElement, _data, _eventHandler){
 	this.eventHandler = _eventHandler;
 	this.dp = this.data;
 	//define all constants
-	this.margin = {top:100, right: 0, bottom: 50, left: 0},
+	this.margin = {top:50, right: 0, bottom: 0, left: 0},
 	this.width = 878 - this.margin.left - this.margin.right,
-	this.height = 450 - this.margin.top - this.margin.bottom;
+	this.height = 500 - this.margin.top - this.margin.bottom;
 
 	this.initVis();
 }
@@ -17,13 +17,13 @@ Choropleth.prototype.initVis = function(){
 
 	this.svg = this.parentElement.select("svg")
 				.attr("width", this.width+this.margin.left+this.margin.right)
-				.attr("height", this.height + this.margin.top + this.margin.bottom)
+				.attr("height", this.height)
 				.append("g")
 				.attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
 
 	//Define map projection
 	this.projection = d3.geo.equirectangular()
-								   .translate([this.width/2+20, this.height/2+30])
+								   .translate([this.width/2+20, this.height/2 + 40])
 								   .scale([this.width/6.5]);	
 
 	//Color
@@ -104,6 +104,38 @@ Choropleth.prototype.updateVis = function(){
 
 	//this.color.domain(d3.extent(this.data.map(function(d){return d.properties.LE[2012]})));
 
+
+		var legend_LE = this.svg.append("text")
+						.text("Life Expectancy")
+						.attr("x", 50)
+						.attr("y", 32)
+
+		var legend=	this.svg.selectAll(".legend")
+				  .data([40, 50, 55, 60, 65, 70, 75, 80])
+
+
+
+				  legend
+				  .enter()
+				  .append("g")
+				  
+
+				  legend.append("rect");
+				  legend.append("text");
+
+				  legend
+				  		.attr("class", "legend")
+				  		.attr("transform", function(d,i){return "translate("+(170+i*70)+","+25+")"; })
+
+				  	legend.select("rect")
+				  	  .style("fill", function(d){return that.color(d);})
+				  	  .attr("width", 40)
+				  	  .attr("height", 8);
+
+				  	legend.select("text")
+				  		  .text(function(d) {return d;})
+				  		  .attr("x", 17)
+				  		  .attr("y", -2)
 	
 	
 
@@ -147,30 +179,53 @@ Choropleth.prototype.updateVis = function(){
 
 	    	this.text = this.svg.selectAll(".subunit-label")
     				.data(this.data)
+
+    				this.text
   					.enter().append("text")
-    				.attr("class", "subunit-label")
+  					.attr("class", "subunit-label")
+
+  					this.text.transition()
     				.attr("transform", function(d) { return "translate(" + that.path.centroid(d) + ")"; })
     				.attr("dy", ".35em")
     				.text(function(d) {return d.properties.name; });
 
+  					
 
 
+    				
 }
 
 Choropleth.prototype.updateSelection = function(){
 
 	that = this;
 	if (that.fil_data.length > 0){
+
 	this.path1.classed("geo-unselect", function(p){ 
 		var check = that.fil_data.filter(function(f){
 			return f.properties.name == p.properties.name;
 		})
-
+			
 		if (check.length == 1){return false;}
 		else{return true;}
 	});
+
+	//console.log(this.text);
+		
+		this.text.classed("geo-text-select", function(p){ 
+			//console.log("check");
+		var check2 = that.fil_data.filter(function(f){
+			return f.properties.name == p.properties.name;
+		})
+			
+		if (check2.length == 1){return true;}
+		else{return false;}
+	});
+
+	
+
 }
 	else{
 		this.path1.classed("geo-unselect", false);
+		this.text.classed("geo-text-select", false);
 	}
 }

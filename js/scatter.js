@@ -62,16 +62,21 @@ Scatter.prototype.initVis = function(){
 		.append("text")
 		.attr("transform", "translate(100,-5)")
 		.style("text-anchor", "start")
+		.style("font-size", 12)
+		.style("font-weight", "bold")
 		.text("Per Capita Health Spending")
 
 	this.svg.append("g")
 		.attr("class", "y axis")
 		.append("text")
-		.attr("transform", "translate(-32,0)rotate(-90)")
-		.attr("y", 6)
+		.attr("transform", "translate(-50,0)rotate(-90)")
+		.attr("y", 15)
 		.attr("dy", ".71em")
 		.style("text-anchor", "end")
+		.style("font-size", 12)
+		.style("font-weight", "bold")
 		.text("Doctors Per 1000")
+
 
 	 
 
