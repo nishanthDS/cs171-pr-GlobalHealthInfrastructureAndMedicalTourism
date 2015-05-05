@@ -78,11 +78,32 @@ Scatter.prototype.initVis = function(){
 		.text("Doctors Per 1000")
 
 
-	 
+	 //Brush legend visual elemen
+	 this.brush_legend =	this.svg.append("g");
+	 						
+	 					this.brush_legend
+	 						.append("rect")
+	 						.style("fill", "steelblue")
+	 						.attr("x", 300)
+	 						.attr("y", 0)
+	 						.attr("width", 40)
+	 						.attr("height", 15)
+	 						
+
+	 					this.brush_legend
+	 						.append("text")
+							.text("Brush")
+							.style("fill", "white")
+							.attr("x", 302)
+							.attr("y", 12);
 
 
 		this.svg.append("g")
         .attr("class", "brush");
+
+     //add slider
+    this.addSlider(this.svg);
+
 	
 	//call the update method
 	this.updateVis();
@@ -102,6 +123,46 @@ Scatter.prototype.brushmove = function(data){
 
 }
 
+Scatter.prototype.addSlider = function(svg){
+    var that = this;
+    var sliderScale = d3.scale.linear().domain([1,.1]).range([0,365])
+    var sliderDragged = function(){
+        var value = Math.max(0, Math.min(365,d3.event.x));
+        var sliderValue = sliderScale.invert(value);
+        that.x.exponent(sliderValue);
+        d3.select(this)
+            .attr("x", function () {
+                return sliderScale(sliderValue);
+            })
+        that.updateVis({});
+    }
+    var sliderDragBehaviour = d3.behavior.drag()
+        .on("drag", sliderDragged)
+    var sliderGroup = svg.append("g").attr({
+        class:"sliderGroup",
+        "transform":"translate("+0+","+30+")"
+    })
+    sliderGroup.append("rect").attr({
+        class:"sliderBg",
+        x:5,
+        y:185,
+        width:370,
+        height:10
+    }).style({
+        fill:"lightgray"
+    })
+    sliderGroup.append("rect").attr({
+        "class":"sliderHandle",
+        x:5,
+        y:180,
+        width:10,
+        height:30,
+        rx:2,
+        ry:2
+    }).style({
+        fill:"#333"
+    }).call(sliderDragBehaviour)
+}
 
 
 Scatter.prototype.onSelectionChange = function(data){

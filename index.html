@@ -33,9 +33,17 @@
 			<h1>Global Health Infrastructure</h1>
 
 		<div class="row">
-			<div class="col-md-8 col-sm-12">
+			<div class="col-md-4">
 				<b>Visualising Global health infrastructure and Life Expectancy</b>
 			</div>
+			<div class="col-md-2">
+				<a href="#" target="_blank" class="btn btn-primary">Demo</a>
+			</div>
+
+			<div class="col-md-2">
+				<a href="#" target="_blank" class="btn btn-primary" >Process Book</a>
+			</div>
+
 		</div>
 		
 	<div class="row">
@@ -186,7 +194,7 @@
 
 					hosptab.onSelectionChange(C_hosp_rank, "cHosp");
 
-					document.getElementById("h_tab").innerHTML = "Hospitals in " + cname;
+					document.getElementById("h_tab").innerHTML = 'Hospitals in <b><font size="3" color="red">' + cname + '</font></b>';
 			});
 
 			$(MyEventHandler).bind("countryRank", function(event, s){

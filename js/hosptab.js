@@ -48,6 +48,7 @@ HospTab.prototype.onSelectionChangeHistogram = function(s){
 
 		that = this;
 		e = s.selection;
+		this.hdata = this.hp;
 		
 
 		this.data_fil = that.geodata.filter(function(d){ return parseFloat(d.properties.gdp) > 0 && parseFloat(d.properties.gdp) > 0 && parseFloat(d.properties.p1000) > 0; });
@@ -66,6 +67,24 @@ HospTab.prototype.onSelectionChangeHistogram = function(s){
    		})
 
 	 
+	this.list_country_hosp =	this.fil_data.map(function(d){return d.properties.name;});
+
+	
+	this.hdata_t = this.hdata.filter(function(d){return that.list_country_hosp.indexOf(d.key) > -1;})
+
+	if (this.hdata_t.length > 0)
+		{
+			this.hdata = this.hdata_t;
+			this.hoverLock = "T";
+		}
+	else
+		{
+			this.hdata = this.hp;
+			this.hoverLock = "F"
+		}
+
+		//console.log(this.hdata);
+	this.updateVis();
 
 	  
 }
@@ -85,10 +104,10 @@ HospTab.prototype.onSelectionChangeScatter = function(s){
 
 		//console.log(this.fil_data);
 
-	var list_country_hosp =	this.fil_data.map(function(d){return d.properties.name;});
+	this.list_country_hosp =	this.fil_data.map(function(d){return d.properties.name;});
 
 	
-	this.hdata_t = this.hdata.filter(function(d){return list_country_hosp.indexOf(d.key) > -1;})
+	this.hdata_t = this.hdata.filter(function(d){return that.list_country_hosp.indexOf(d.key) > -1;})
 
 	if (this.hdata_t.length > 0)
 		{
@@ -144,7 +163,7 @@ HospTab.prototype.updateVis = function(){
 		var cells = rows.selectAll("td")
 						.data(function(d){
 							if(that.option == "cHosp")
-							{return [d.rank, d.hospital];}
+							{return [d.rank, d.hospital.replace(/[^a-zA-Z ]/g, "")];}
 							else{return [d.key, d.values];}
 					})
 						.enter()

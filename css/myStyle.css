@@ -40,8 +40,9 @@ body{
     margin:0;
 
     width: 100%;
-    background:rgba(255,255,255,0.5);
+    background:rgba(255,255,255, .5);
     display: none;
+    
 }
 
 .slider1, .slider2
@@ -62,6 +63,13 @@ body{
 
 table, th, td {
     border: 1px solid black;
+}
+
+   tr:nth-child(even) {
+  background-color: lightgrey;
+          }
+tr:nth-child(odd) {
+  background-color: white;
 }
 
 .geo {
