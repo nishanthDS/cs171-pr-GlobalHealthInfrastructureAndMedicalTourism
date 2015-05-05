@@ -4,7 +4,7 @@ Scatter = function(_parentElement, _data, _eventHandler){
 	this.data = _data.features;
 	this.eventHandler = _eventHandler;
 	this.dp = this.data;
-//18602086633
+
 	//define all constants
 	this.margin = {top:20, right: 0, bottom: 50, left: 60},
 	this.width = 500 - this.margin.left - this.margin.right,
